@@ -7,7 +7,7 @@
   "scripts": {
     "build": "webpack",
     "watch": "webpack --watch",
-    "start": ".env/Scripts/python run.py"
+    "start": "webpack && .env/Scripts/python run.py"
   },
   "dependencies": {
     "font-awesome": "^4.7.0",
