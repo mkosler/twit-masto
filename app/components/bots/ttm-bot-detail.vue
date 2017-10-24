@@ -2,7 +2,7 @@
     <div>
         <p v-if="loading">Loading...</p>
         <p v-if="error">{{ error }}</p>
-        <div v-if="bot">
+        <div v-if="!loading && bot">
             <h3 v-if="!updating" @dblclick="updating = true">
                 {{ bot.username }}
             </h3>
@@ -17,14 +17,28 @@
                         <th>URL</th>
                         <th>Created At</th>
                         <th>Member Count</th>
+                        <th></th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr v-for="l in lists" :key="l.id">
+                <tbody v-for="l in lists" v-show="!l.chosen" :key="l.id">
+                    <tr @click="select(l)">
                         <td>{{ l.name }}</td>
                         <td>{{ l.uri }}</td>
                         <td>{{ l.created_at | datetime }}</td>
                         <td>{{ l.member_count }}</td>
+                        <td>
+                            <button @click.stop="choose(l)">
+                                <span class="fa fa-check"></span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr v-show="l.selected">
+                        <td colspan="5">
+                            <div v-for="status in l.statuses" :key="status.id">
+                                @{{ status.user.screen_name }}
+                                {{ status.text }}
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -47,7 +61,8 @@ export default {
             error: null,
             bot: null,
             lists: null,
-            updating: false
+            updating: false,
+            chosenLists: []
         }
     },
     created() {
@@ -84,6 +99,25 @@ export default {
                 this.loading = false;
                 this.error = response.statusText;
             });
+        },
+        select(l) {
+            this.$set(l, 'selected', !l.selected);
+
+            if (!l.statuses) {
+                this.$http.get('/twitter-api/lists/statuses', {
+                    params: {
+                        count: 5,
+                        owner_id: l.user.id,
+                        slug: l.slug
+                    }
+                }).then(response => {
+                    this.$set(l, 'statuses', response.body.statuses);
+                });
+            }
+        },
+        choose(l) {
+            this.$set(l, 'chosen', true);
+            this.chosenLists.push(l);
         }
     }
 }
