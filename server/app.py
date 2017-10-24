@@ -7,6 +7,11 @@ from bottle import Bottle, JSONPlugin, static_file, request, load
 
 
 BASE_API = '/api/v1'
+CONSUMER_KEY = os.environ['TWITTER_CONSUMER_KEY']
+CONSUMER_SECRET = os.environ['TWITTER_CONSUMER_SECRET']
+ACCESS_TOKEN = os.environ['TWITTER_ACCESS_TOKEN']
+ACCESS_SECRET = os.environ['TWITTER_ACCESS_SECRET']
+_conn_string = os.environ['TWITMASTO_CONNECTION_STRING']
 
 
 def _datetime_handler(x):
@@ -21,7 +26,6 @@ app.install(JSONPlugin(
     json_dumps=lambda body: json.dumps(body, default=_datetime_handler)
 ))
 _public_root = os.path.join(os.getcwd(), 'public/')
-_conn_string = os.environ['TWITMASTO_CONNECTION_STRING']
 conn = psycopg2.connect(
     _conn_string,
     cursor_factory=psycopg2.extras.RealDictCursor
@@ -36,6 +40,7 @@ def _strip_path():
 
 # Register controllers
 load('server.controllers.bots')
+load('server.controllers.twitter_api')
 
 
 # Static routes
